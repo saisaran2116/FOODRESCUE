@@ -3,7 +3,6 @@ import { FoodRescueProvider, useFoodRescue } from './context/FoodRescueContext';
 import { Navbar } from './components/common/Navbar';
 import { Footer } from './components/common/Footer';
 import { NotificationDrawer } from './components/common/NotificationDrawer';
-import { DemoFlowGuide } from './components/hackathon/DemoFlowGuide';
 
 // Pages & Sections
 import { Hero } from './components/home/Hero';
@@ -58,7 +57,6 @@ export function App() {
         </div>
         <Footer />
         <NotificationDrawer />
-        <DemoFlowGuide />
       </div>
     </FoodRescueProvider>
   );
