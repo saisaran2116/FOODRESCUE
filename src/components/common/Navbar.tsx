@@ -9,7 +9,9 @@ export const Navbar: React.FC = () => {
     setActivePage, 
     unreadNotifsCount, 
     setIsNotifOpen, 
-    currentUser 
+    currentUser,
+    isAuthenticated,
+    logoutUser 
   } = useFoodRescue();
 
   const [isScrolled, setIsScrolled] = useState(false);
@@ -97,37 +99,61 @@ export const Navbar: React.FC = () => {
               )}
             </button>
 
-            {/* Profile & Role Switcher Pill */}
-            <button
-              onClick={() => setIsRoleModalOpen(true)}
-              className="hidden sm:flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-full bg-white/90 border border-stone-200/80 hover:border-stone-300 shadow-sm transition-all"
-              title="Switch user role"
-            >
-              <img
-                src={currentUser.avatar}
-                alt={currentUser.name}
-                className="w-7 h-7 rounded-full object-cover border border-stone-200"
-              />
-              <div className="text-left">
-                <span className="block text-[11px] font-bold text-[#171717] leading-tight truncate max-w-[90px]">
-                  {currentUser.name}
-                </span>
-                <span className="block text-[9px] uppercase font-bold tracking-wider text-[#2E8B57]">
-                  {currentUser.role}
-                </span>
-              </div>
-            </button>
+            {/* Auth State & Profile */}
+            {isAuthenticated ? (
+              <div className="flex items-center gap-2">
+                {/* Profile & Role Switcher Pill */}
+                <button
+                  onClick={() => setIsRoleModalOpen(true)}
+                  className="hidden sm:flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-full bg-white/90 border border-stone-200/80 hover:border-stone-300 shadow-sm transition-all"
+                  title="Switch user role"
+                >
+                  <img
+                    src={currentUser.avatar}
+                    alt={currentUser.name}
+                    className="w-7 h-7 rounded-full object-cover border border-stone-200"
+                  />
+                  <div className="text-left">
+                    <span className="block text-[11px] font-bold text-[#171717] leading-tight truncate max-w-[90px]">
+                      {currentUser.name}
+                    </span>
+                    <span className="block text-[9px] uppercase font-bold tracking-wider text-[#2E8B57]">
+                      {currentUser.role}
+                    </span>
+                  </div>
+                </button>
 
-            {/* Profile Page Link */}
-            <button
-              onClick={() => setActivePage('profile')}
-              className={`p-2 rounded-full border border-stone-200/80 transition-colors ${
-                activePage === 'profile' ? 'bg-[#12372A] text-white' : 'bg-white/80 text-stone-700 hover:bg-white'
-              }`}
-              title="View Profile"
-            >
-              <UserCircle className="w-5 h-5" />
-            </button>
+                {/* Profile Page Link */}
+                <button
+                  onClick={() => setActivePage('profile')}
+                  className={`p-2 rounded-full border border-stone-200/80 transition-colors ${
+                    activePage === 'profile' ? 'bg-[#12372A] text-white' : 'bg-white/80 text-stone-700 hover:bg-white'
+                  }`}
+                  title="View Profile"
+                >
+                  <UserCircle className="w-5 h-5" />
+                </button>
+
+                {/* Logout Button */}
+                <button
+                  onClick={() => {
+                    logoutUser();
+                    setActivePage('login');
+                  }}
+                  className="hidden xl:inline-flex text-xs font-semibold text-stone-500 hover:text-stone-900 px-3 py-1.5 rounded-full hover:bg-stone-100 transition-colors"
+                  title="Sign Out"
+                >
+                  Sign Out
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setActivePage('login')}
+                className="px-5 py-2 rounded-full bg-white border border-stone-200/90 text-xs font-extrabold text-[#12372A] hover:bg-[#FFF9ED] transition-colors shadow-sm"
+              >
+                Sign In
+              </button>
+            )}
 
             {/* Primary Action Button */}
             <button
@@ -193,15 +219,40 @@ export const Navbar: React.FC = () => {
               ))}
             </div>
 
-            <button
-              onClick={() => {
-                setActivePage('donate');
-                setMobileMenuOpen(false);
-              }}
-              className="w-full mt-2 py-3 rounded-2xl bg-[#FF9F43] text-stone-950 font-extrabold text-xs flex items-center justify-center gap-1.5"
-            >
-              Post Surplus Food <ArrowUpRight className="w-4 h-4" />
-            </button>
+            <div className="pt-2 flex items-center justify-between gap-2">
+              {isAuthenticated ? (
+                <button
+                  onClick={() => {
+                    logoutUser();
+                    setActivePage('login');
+                    setMobileMenuOpen(false);
+                  }}
+                  className="w-1/2 py-2.5 rounded-2xl bg-stone-100 hover:bg-stone-200 text-stone-800 text-xs font-bold transition-colors"
+                >
+                  Sign Out
+                </button>
+              ) : (
+                <button
+                  onClick={() => {
+                    setActivePage('login');
+                    setMobileMenuOpen(false);
+                  }}
+                  className="w-1/2 py-2.5 rounded-2xl bg-[#12372A] text-white text-xs font-bold transition-colors"
+                >
+                  Sign In
+                </button>
+              )}
+
+              <button
+                onClick={() => {
+                  setActivePage('donate');
+                  setMobileMenuOpen(false);
+                }}
+                className="w-1/2 py-2.5 rounded-2xl bg-[#FF9F43] text-stone-950 font-extrabold text-xs flex items-center justify-center gap-1.5"
+              >
+                Post Surplus <ArrowUpRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
           </div>
         )}
       </header>

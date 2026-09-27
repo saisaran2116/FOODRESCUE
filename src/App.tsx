@@ -19,6 +19,7 @@ import { VolunteerPage } from './components/volunteer/VolunteerPage';
 import { DashboardPage } from './components/dashboard/DashboardPage';
 import { ProfilePage } from './components/profile/ProfilePage';
 import { ImpactPage } from './components/impact/ImpactPage';
+import { LoginPage } from './components/auth/LoginPage';
 
 const MainContent: React.FC = () => {
   const { activePage } = useFoodRescue();
@@ -42,6 +43,7 @@ const MainContent: React.FC = () => {
       {activePage === 'dashboard' && <DashboardPage />}
       {activePage === 'profile' && <ProfilePage />}
       {activePage === 'impact' && <ImpactPage />}
+      {activePage === 'login' && <LoginPage />}
     </main>
   );
 };

@@ -2,13 +2,17 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Donation, Pickup, ImpactMetrics, NotificationItem, User, UserRole, PriorityLevel, FoodCategory } from '../types';
 import { INITIAL_DONATIONS, INITIAL_PICKUPS, INITIAL_NOTIFICATIONS, USERS, triggerConfetti } from '../services/dataService';
 
-export type ActivePage = 'home' | 'donate' | 'find' | 'volunteer' | 'dashboard' | 'profile' | 'impact';
+export type ActivePage = 'home' | 'donate' | 'find' | 'volunteer' | 'dashboard' | 'profile' | 'impact' | 'login';
 
 interface FoodRescueContextType {
   activePage: ActivePage;
   setActivePage: (page: ActivePage) => void;
   currentUser: User;
+  isAuthenticated: boolean;
   setUserRole: (role: UserRole) => void;
+  loginUser: (roleOrEmail: string) => void;
+  signupUser: (data: { name: string; email: string; role: UserRole; organization?: string; phone?: string }) => void;
+  logoutUser: () => void;
   donations: Donation[];
   pickups: Pickup[];
   impact: ImpactMetrics;
@@ -85,10 +89,81 @@ export const FoodRescueProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     localStorage.setItem('foodrescue_notifs', JSON.stringify(notifications));
   }, [notifications]);
 
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    const saved = localStorage.getItem('foodrescue_auth');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('foodrescue_auth', JSON.stringify(isAuthenticated));
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    localStorage.setItem('foodrescue_user', JSON.stringify(currentUser));
+  }, [currentUser]);
+
   const setUserRole = (role: UserRole) => {
     if (USERS[role]) {
       setCurrentUser(USERS[role]);
+      setIsAuthenticated(true);
     }
+  };
+
+  const loginUser = (roleOrEmail: string) => {
+    if (USERS[roleOrEmail as UserRole]) {
+      setCurrentUser(USERS[roleOrEmail as UserRole]);
+    } else {
+      // Find matching user or fallback
+      const found = Object.values(USERS).find(u => u.email.toLowerCase() === roleOrEmail.toLowerCase());
+      if (found) {
+        setCurrentUser(found);
+      } else {
+        setCurrentUser({
+          id: `usr-${Date.now()}`,
+          name: roleOrEmail.split('@')[0],
+          email: roleOrEmail,
+          role: 'donor',
+          avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80',
+          organization: 'Community Partner'
+        });
+      }
+    }
+    setIsAuthenticated(true);
+    triggerConfetti();
+  };
+
+  const signupUser = (data: { name: string; email: string; role: UserRole; organization?: string; phone?: string }) => {
+    const defaultAvatars: Record<UserRole, string> = {
+      donor: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=200&q=80',
+      volunteer: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
+      ngo: 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=200&q=80',
+      admin: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80'
+    };
+
+    const newUser: User = {
+      id: `usr-${Date.now()}`,
+      name: data.name,
+      email: data.email,
+      role: data.role,
+      organization: data.organization,
+      phone: data.phone,
+      avatar: defaultAvatars[data.role] || defaultAvatars.donor,
+      impact_stats: {
+        donations_count: 0,
+        meals_rescued: 0,
+        pickups_completed: 0,
+        impact_level: 100,
+        badge: data.role === 'volunteer' ? 'RISING FOOD HERO' : 'VERIFIED PARTNER'
+      }
+    };
+
+    setCurrentUser(newUser);
+    setIsAuthenticated(true);
+    triggerConfetti();
+  };
+
+  const logoutUser = () => {
+    setIsAuthenticated(false);
   };
 
   const markNotifAsRead = (id: string) => {
@@ -373,7 +448,11 @@ export const FoodRescueProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         activePage,
         setActivePage,
         currentUser,
+        isAuthenticated,
         setUserRole,
+        loginUser,
+        signupUser,
+        logoutUser,
         donations,
         pickups,
         impact,
